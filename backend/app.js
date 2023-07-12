@@ -5,12 +5,17 @@ const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit'); // limiter
 const helmet = require('helmet');
 const cors = require('cors');
+const { config } = require('dotenv');
 const { errors } = require('celebrate');
 const auth = require('./middlewares/auth');
 const errorHandler = require('./middlewares/errorHandler');
 const { createUser, login } = require('./controllers/users');
 const NotFoundError = require('./utils/errors/404-NotFound');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+
+if (process.env.NODE_ENV !== 'production') {
+  config();
+}
 
 const { PORT = 3000, MONGO_DB = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
@@ -77,6 +82,10 @@ app.use('/cards', auth, require('./routes/cards'));
 
 app.use('*', () => {
   throw new NotFoundError('Не найдено');
+});
+
+app.get('/crush-test', () => {
+  process.exit(1);
 });
 
 app.use(errorLogger);

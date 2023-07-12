@@ -13,7 +13,7 @@ const authMiddleware = (req, res, next) => {
   let payload;
 
   try {
-    payload = jwt.verify(token, 'some-secret-key');
+    payload = jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
     return next(UnauthorizedError('Необходима авторизация'));
   }
