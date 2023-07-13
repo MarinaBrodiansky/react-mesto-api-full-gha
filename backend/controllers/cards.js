@@ -66,7 +66,7 @@ const deleteCard = (req, res, next) => {
 
       return Card.deleteOne(card)
         .then(() => {
-          res.send({ data: {} });
+          res.send({ message: 'Карточка успешно удалена' });
         })
         .catch(next);
     })
