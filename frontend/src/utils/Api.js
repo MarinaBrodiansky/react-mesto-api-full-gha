@@ -96,8 +96,7 @@ class Api {
 }
 
 const api = new Api ({
-    // url: 'https://mesto.nomoreparties.co/v1/cohort-62',
-    url: 'http://localhost:3000',
+    url: process.env.REACT_APP_API_URL,
     headers: {
       'content-type': 'application/json',
       Authorization: 'dec641ac-fc27-4805-b368-ba2e5680c0a5'
