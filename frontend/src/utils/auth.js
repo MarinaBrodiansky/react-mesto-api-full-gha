@@ -1,6 +1,4 @@
-//const baseURL = 'https://auth.nomoreparties.co'
-const baseURL = 'https://api.marina.project.nomoredomains.work'
-// const baseURL = 'http://localhost:3000'
+const baseURL = process.env.REACT_APP_API_URL
 
 function checkResponse(res) {
     if (res.ok) {

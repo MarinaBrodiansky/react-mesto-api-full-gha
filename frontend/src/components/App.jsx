@@ -13,6 +13,7 @@ import InfoTooltip from "./InfoTooltip";
 function App() {
   const navigate = useNavigate();
 
+  const [token, setToken] = useState("")
   const [loggedIn, setLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
@@ -26,19 +27,38 @@ function App() {
   const [isSuccessPopupOpened, setIsSuccessPopupOpened] = useState(false);
   const [isFailPopupOpened, setIsFailPopupOpened] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const checkUserToken = (token) => {
+    return checkToken(token)
+      .then((res) => {
+        setUserEmail(res.email);
+        setLoggedIn(true);
+        setToken(token);
+        navigate("/");
+      })
+      .catch((err) => console.log(err));
+  };
+
+  useEffect(() => {
+    const _token = localStorage.getItem("token")
+    if (!loggedIn && _token) {
+      checkUserToken(_token)
+    }
+  }, [checkUserToken, loggedIn, token])
+
   useEffect(() => {
     if (loggedIn) {
-      api
+      api(token)
         .getUserInfo()
         .then((res) => setCurrentUser(res))
         .catch((err) => console.log(err));
 
-      api
+      api(token)
         .getInitialCards()
         .then((data) => setCards(data))
         .catch((error) => console.log(error));
     }
-  }, [loggedIn]);
+  }, [loggedIn, token]);
 
   const handleEditAvatarClick = () => setIsEditAvatarPopupOpen(true);
   const handleEditProfileClick = () => setIsEditProfilePopupOpen(true);
@@ -59,7 +79,7 @@ function App() {
   };
 
   const handleUpdateAvatar = (avatar) => {
-    api
+    api(token)
       .editAvatar(avatar)
       .then((userData) => {
         setCurrentUser(userData);
@@ -69,7 +89,7 @@ function App() {
   };
 
   const handleUpdateUser = (name, about) => {
-    api
+    api(token)
       .setUserInfo(name, about)
       .then((userData) => {
         setCurrentUser(userData);
@@ -79,7 +99,7 @@ function App() {
   };
 
   const handleAddPlaceSubmit = (name, link) => {
-    api
+    api(token)
       .addCard(name, link)
       .then((newCard) => {
         setCards([newCard, ...cards]);
@@ -90,7 +110,7 @@ function App() {
 
   const handleCardLike = (card) => {
     const isLiked = card.likes.some((i) => i._id === currentUser._id);
-    api
+    api(token)
       .changeLikeCardStatus(card._id, !isLiked)
       .then((newCard) => {
         setCards((state) =>
@@ -101,21 +121,10 @@ function App() {
   };
 
   const handleCardDelete = (card) => {
-    api
+    api(token)
       .deleteCard(card._id)
       .then(() => {
         setCards(cards.filter((newCard) => newCard._id !== card._id));
-      })
-      .catch((err) => console.log(err));
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const checkUserToken = (token) => {
-    checkToken(token)
-      .then((res) => {
-        setUserEmail(res.data.email);
-        setLoggedIn(true);
-        navigate("/");
       })
       .catch((err) => console.log(err));
   };
@@ -132,21 +141,16 @@ function App() {
     login(password, email)
       .then((res) => {
         localStorage.setItem("token", res.token);
+        setToken(res.token);
         return res.token;
       })
       .then((token) => checkUserToken(token))
       .catch((err) => setIsFailPopupOpened(true));
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!loggedIn && token) {
-      checkUserToken(token);
-    }
-  }, [checkUserToken, loggedIn]);
-
   const onSignOut = () => {
     setLoggedIn(false);
+    setToken('');
     localStorage.removeItem('token');
   }
 
@@ -185,7 +189,7 @@ function App() {
           <Route
             path="/sign-up"
             element={
-            <Register onRegistrationSubmit={onRegistrationSubmit} />
+              <Register onRegistrationSubmit={onRegistrationSubmit} />
             }
           />
           <Route

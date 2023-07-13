@@ -46,29 +46,42 @@ const createUser = (req, res, next) => {
 
 const getAllUsers = (req, res, next) => {
   User.find({})
-    .then((userList) => res.send({ data: userList }))
+    .then((userList) => res.send(userList))
     .catch(next);
 };
 
 const getUser = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail(new NotFoundError('Пользователь с таким ID не найден'))
-    .then((foundUser) => res.send({ data: foundUser }))
+    .then((foundUser) => res.send(foundUser))
     .catch(next);
 };
 
+/**
+ * @example
+ * ```json
+ * {
+ *    "name": "Марина Bro",
+ *     "about": "Мамочка",
+ *     "avatar": "https://images.unsplash.com/photo-1618844839858-906d7a957930?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fCVEMCVCQSVEMCVCOCVEMSU4MSVEMCVCQiVEMCVCRSVEMCVCMiVEMCVCRSVEMCVCNCVEMSU4MSVEMCVCQXxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60",
+ *     "_id": "a7e99d07cefacc5414623ed3",
+ *     "email": "user@mail.net"
+ * }
+ * ```
+ */
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(new NotFoundError('Пользователь с таким ID не найден'))
-    .then((foundUser) => res.send({ data: foundUser }))
+    .then((foundUser) => res.send(foundUser))
     .catch(next);
 };
+
 // eslint-disable-next-line consistent-return
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .then((updatedUser) => res.send({ data: updatedUser }))
+    .then((updatedUser) => res.send(updatedUser))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные'));
@@ -82,7 +95,7 @@ const updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err instanceof ValidationError) {
         next(new BadRequestError('Некорректные данные'));
@@ -97,7 +110,8 @@ const login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-      res.send({ email, token });
+
+      return res.send({ email, token });
     })
     .catch(next);
 };
