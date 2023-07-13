@@ -95,11 +95,13 @@ class Api {
     }
 }
 
+const token = localStorage.getItem("token");
+
 const api = new Api ({
     url: process.env.REACT_APP_API_URL,
     headers: {
       'content-type': 'application/json',
-      Authorization: 'dec641ac-fc27-4805-b368-ba2e5680c0a5'
+      Authorization: `Bearer ${token}`
     }
   });
 
