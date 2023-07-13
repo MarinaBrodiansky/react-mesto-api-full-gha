@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { ValidationError } = require('mongoose').Error;
 const User = require('../models/user');
+const { JWT_SECRET } = require('../config/settings');
 const BadRequestError = require('../utils/errors/400-BadRequest');
 const NotFoundError = require('../utils/errors/404-NotFound');
 
@@ -67,14 +68,13 @@ const updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .then((updatedUser) => {
-      if (updatedUser) {
-        res.send({ data: updatedUser });
-      } else {
-        throw new BadRequestError('Переданы некорректные данные');
+    .then((updatedUser) => res.send({ data: updatedUser }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные'));
       }
-    })
-    .catch(next);
+      next(err);
+    });
 };
 
 // eslint-disable-next-line consistent-return
@@ -96,7 +96,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res.send({ email, token });
     })
     .catch(next);
