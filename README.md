@@ -9,7 +9,7 @@
 
 ## Ссылки на проект
 
-IP-адрес 84.201.157.244
+IP 84.201.157.244
 
 Frontend https://marina.project.nomoreparties.sbs
 
